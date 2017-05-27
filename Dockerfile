@@ -33,7 +33,6 @@ COPY start-amportal.sh /etc/my_init.d/start-amportal.sh
 # Install Required Dependencies
 RUN apt-get update \
 	&& apt-get install -y \
-		unzip \
 		apache2 \
 		autoconf \
 		automake \
@@ -75,9 +74,7 @@ RUN apt-get update \
 		sqlite3 \
 		unixodbc-dev \
 		uuid \
-		uuid-dev \
-	&& apt-get clean \
-	&& rm -rf /var/lib/apt/lists/*
+		uuid-dev 
 
 # Replace default conf files to reduce memory usage
 COPY conf/my-small.cnf /etc/mysql/my.cnf
@@ -158,6 +155,14 @@ RUN useradd -m $ASTERISKUSER \
 	&& chown -R $ASTERISKUSER. /var/www/* \
 	&& rm -rf /var/www/html
 
+# 2nd dependency download (Placing it here avoids recompiling asterisk&co during docker build)
+RUN apt-get update \
+	&& apt-get install -y \
+		sudo \
+		unzip \
+	&& apt-get clean \
+	&& rm -rf /var/lib/apt/lists/*
+
 # Download German sounds
 RUN mkdir /var/lib/asterisk/sounds/de
 WORKDIR /var/lib/asterisk/sounds/de 
@@ -176,15 +181,16 @@ RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
 RUN sed -i 's/\(^upload_max_filesize = \).*/\120M/' /etc/php5/apache2/php.ini \
 	&& cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf_orig \
 	&& sed -i 's/^\(User\|Group\).*/\1 asterisk/' /etc/apache2/apache2.conf \
-	&& sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+	&& sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/sites-available/default
 
 # Configure Asterisk database in MYSQL
-RUN /etc/init.d/mysql start \
-	&& mysqladmin -u root create asterisk \
-	&& mysqladmin -u root create asteriskcdrdb \
-	&& mysql -u root -e "GRANT ALL PRIVILEGES ON asterisk.* TO $ASTERISKUSER@localhost IDENTIFIED BY '';" \
-	&& mysql -u root -e "GRANT ALL PRIVILEGES ON asteriskcdrdb.* TO $ASTERISKUSER@localhost IDENTIFIED BY '';" \
-	&& mysql -u root -e "flush privileges;"
+#RUN /etc/init.d/mysql start \
+#	&& mysqladmin -u root create asterisk \
+#	&& mysqladmin -u root create asteriskcdrdb \
+#	&& mysql -u root -e "GRANT ALL PRIVILEGES ON asterisk.* TO $ASTERISKUSER@localhost IDENTIFIED BY '';" \
+#	&& mysql -u root -e "GRANT ALL PRIVILEGES ON asteriskcdrdb.* TO $ASTERISKUSER@localhost IDENTIFIED BY '';" \
+#	&& mysql -u root -e "flush privileges;"
+	
 
 #Make CDRs work
 COPY conf/cdr/odbc.ini /etc/odbc.ini
@@ -195,6 +201,7 @@ RUN chown asterisk:asterisk /etc/asterisk/cdr_adaptive_odbc.conf \
 
 # Download and install FreePBX
 WORKDIR /usr/src
+RUN a2enmod rewrite
 RUN curl -sf -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepbx/freepbx-13.0-latest.tgz \
 	&& tar xfz freepbx.tgz \
 	&& rm freepbx.tgz \
@@ -202,9 +209,9 @@ RUN curl -sf -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepb
 	&& /etc/init.d/mysql start \
 	&& mkdir /var/www/html \
 	&& /etc/init.d/apache2 start \
-	&& /usr/sbin/asterisk \
+	&& service asterisk start \
 	&& sleep 5 \
-	&& ./install -n \
+	&& ./install -f -n \
 	&& fwconsole restart \
 	&& rm -r /usr/src/freepbx
 
