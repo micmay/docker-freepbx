@@ -146,16 +146,6 @@ RUN curl -sf -o asterisk-core-sounds-en-wav-current.tar.gz -L http://downloads.a
 	&& tar -xzf asterisk-extra-sounds-en-g722-current.tar.gz \
 	&& rm -f asterisk-extra-sounds-en-g722-current.tar.gz
 
-# Download German sounds
-RUN mkdir /var/lib/asterisk/sounds/de
-WORKDIR /var/lib/asterisk/sounds/de 
-RUN curl -sf -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
-	&& curl -sf -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
-	&& unzip -u core.zip \
-	&& unzip -u extra.zip  \
-	&& chown -R asterisk.asterisk /var/lib/asterisk/sounds/de  \
-	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
-
 # Add Asterisk user
 RUN useradd -m $ASTERISKUSER \
 	&& chown $ASTERISKUSER. /var/run/asterisk \ 
@@ -167,6 +157,20 @@ RUN useradd -m $ASTERISKUSER \
 	&& chown -R $ASTERISKUSER. /var/www/ \
 	&& chown -R $ASTERISKUSER. /var/www/* \
 	&& rm -rf /var/www/html
+
+# Download German sounds
+RUN mkdir /var/lib/asterisk/sounds/de
+WORKDIR /var/lib/asterisk/sounds/de 
+RUN curl -sf -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
+	&& curl -sf -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
+	&& unzip -u core.zip \
+	&& unzip -u extra.zip 
+
+RUN rm -f core.zip \
+	&& rm -f extra.zip 
+
+RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
+	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
 
 # Configure apache
 RUN sed -i 's/\(^upload_max_filesize = \).*/\120M/' /etc/php5/apache2/php.ini \
