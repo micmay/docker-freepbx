@@ -1,4 +1,12 @@
-FROM phusion/baseimage
+# This dockerfile and configuration is originaly created by
+# Jason Martin <jason@greenpx.co.uk>
+# Many Thanks to the original author in this place!
+
+# My changes:
+# Tagging baseimage to 0.9.1 which is ubuntu14.04 - some packages do not exist in ubuntu 16.04
+# Adding German sound files
+
+FROM phusion/baseimage:0.9.1
 MAINTAINER Jason Martin <jason@greenpx.co.uk>
 
 # Set environment variables
@@ -24,8 +32,8 @@ COPY start-amportal.sh /etc/my_init.d/start-amportal.sh
 
 # Install Required Dependencies
 RUN apt-get update \
-	&& apt-get upgrade -y \
 	&& apt-get install -y \
+		unzip \
 		apache2 \
 		autoconf \
 		automake \
@@ -137,6 +145,16 @@ RUN curl -sf -o asterisk-core-sounds-en-wav-current.tar.gz -L http://downloads.a
 	&& curl -sf -o asterisk-extra-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-g722-current.tar.gz \
 	&& tar -xzf asterisk-extra-sounds-en-g722-current.tar.gz \
 	&& rm -f asterisk-extra-sounds-en-g722-current.tar.gz
+
+# Download German sounds
+RUN mkdir /var/lib/asterisk/sounds/de
+WORKDIR /var/lib/asterisk/sounds/de 
+RUN curl -sf -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
+	&& curl -sf -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
+	&& unzip core.zip \
+	&& unzip extra.zip  \
+	&& chown -R asterisk.asterisk /var/lib/asterisk/sounds/de  \
+	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
 
 # Add Asterisk user
 RUN useradd -m $ASTERISKUSER \
