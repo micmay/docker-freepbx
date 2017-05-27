@@ -151,8 +151,8 @@ RUN mkdir /var/lib/asterisk/sounds/de
 WORKDIR /var/lib/asterisk/sounds/de 
 RUN curl -sf -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
 	&& curl -sf -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
-	&& unzip core.zip \
-	&& unzip extra.zip  \
+	&& unzip -u core.zip \
+	&& unzip -u extra.zip  \
 	&& chown -R asterisk.asterisk /var/lib/asterisk/sounds/de  \
 	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
 
