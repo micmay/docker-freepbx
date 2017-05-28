@@ -11,7 +11,7 @@
 
 ### Run your FreePBX image
 ```bash
-docker run --net=host -d -t jmar71n/freepbx
+docker run --net=host -d -t mima84/docker-freepbx
 ```
 
 Test it out by visiting your hosts ip address in a browser.
@@ -19,4 +19,4 @@ Test it out by visiting your hosts ip address in a browser.
 ### Fork ME
 
 Please feel free to fork or contribite to this image.
-[https://bitbucket.org/jmar71n/docker-freepbx/src/]
+[https://github.com/micmay/docker-freepbx.git]

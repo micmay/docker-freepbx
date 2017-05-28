@@ -7,7 +7,7 @@
 # Adding German sound files
 
 FROM phusion/baseimage:0.9.1
-MAINTAINER Michael Mayer <2beorn2be@gmail.com>
+MAINTAINER Michael Mayer <ping@michael-mayer.biz>
 
 # Set environment variables
 ENV DEBIAN_FRONTEND noninteractive
