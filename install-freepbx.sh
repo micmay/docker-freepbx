@@ -7,16 +7,12 @@ curl -sf -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepbx/fr
 && tar xfz freepbx.tgz \
 && rm freepbx.tgz \
 && cd /usr/src/freepbx \
-&& service mysql start \
 && mkdir /var/www/html \
-&& /etc/init.d/apache2 start \
-&& /etc/init.d/asterisk start \
-&& sleep 5 \
 && echo "<pre>" > /var/www/index.html \
 && ./install -f -n >>  /var/www/index.html 2>&1 \
 && fwconsole ma refreshsignatures \
-&& fwconsole restart \
 && rm -r /usr/src/freepbx \
-&& echo "Redirect /index.html /html/" > /var/www/.htaccess \
-&& echo "Successfull ..." > /var/www/index.html
+&& echo "Forbidden ..." > /var/www/index.html
+
+fwconsole restart --immediate 
 popd
