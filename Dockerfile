@@ -4,7 +4,6 @@
 
 # My changes:
 # Tagging baseimage to 0.9.1 which is ubuntu14.04 - some packages do not exist in ubuntu 16.04
-# Adding German sound files
 
 FROM phusion/baseimage:0.9.1
 MAINTAINER Michael Mayer <ping@michael-mayer.biz>
@@ -164,16 +163,16 @@ RUN apt-get update \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Download German sounds
-RUN mkdir /var/lib/asterisk/sounds/de
-WORKDIR /var/lib/asterisk/sounds/de 
-RUN curl -sf -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
-	&& curl -sf -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
-	&& unzip -u core.zip \
-	&& unzip -u extra.zip 
-RUN rm -f core.zip \
-	&& rm -f extra.zip 
-RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
-	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
+#RUN mkdir /var/lib/asterisk/sounds/de
+#WORKDIR /var/lib/asterisk/sounds/de 
+#RUN curl -sf -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
+#	&& curl -sf -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
+#	&& unzip -u core.zip \
+#	&& unzip -u extra.zip 
+#RUN rm -f core.zip \
+#	&& rm -f extra.zip 
+#RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
+#	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
 
 
 # Configure apache
