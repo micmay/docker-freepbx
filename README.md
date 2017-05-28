@@ -10,11 +10,40 @@
 
 
 ### Run your FreePBX image
+
+#### 1st time
+
 ```bash
-docker run --net=host -d -t mima84/docker-freepbx
+cd /tmp/
+mkdir docker-freepbx
+cd docker-freepbx
+wget https://raw.githubusercontent.com/micmay/docker-freepbx/master/docker-compose.yml
+
+docker-compose up -d
+```
+**Wait for a few minutes. The installation of freepbx starts with the first container startup!**
+
+Got to http://localhost:8082 to follow the installation.
+
+Once successfull go to http://localhost:8082/html for freepbx
+
+#### 2nd time
+docker start freepbx
+
+
+#### shutdown
+```bash
+docker stop freepbx
 ```
 
-**Wait for a few minutes. The installation of freepbx starts with the first container startup!**
+#### Remove
+```bash
+docker-compose down
+```
+
+```bash
+docker rm freepbx
+```
 
 Test it out by visiting your hosts ip address in a browser.
 ```
