@@ -170,12 +170,11 @@ RUN curl -sf -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-
 	&& curl -sf -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
 	&& unzip -u core.zip \
 	&& unzip -u extra.zip 
-
 RUN rm -f core.zip \
 	&& rm -f extra.zip 
-
 RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
 	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
+
 
 # Configure apache
 RUN sed -i 's/\(^upload_max_filesize = \).*/\120M/' /etc/php5/apache2/php.ini \
@@ -202,17 +201,11 @@ RUN chown asterisk:asterisk /etc/asterisk/cdr_adaptive_odbc.conf \
 # Download and install FreePBX
 WORKDIR /usr/src
 RUN a2enmod rewrite
-RUN curl -sf -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepbx/freepbx-13.0-latest.tgz \
-	&& tar xfz freepbx.tgz \
-	&& rm freepbx.tgz \
-	&& cd /usr/src/freepbx \
-	&& /etc/init.d/mysql start \
-	&& mkdir /var/www/html \
-	&& /etc/init.d/apache2 start \
-	&& service asterisk start \
-	&& sleep 5 \
-	&& ./install -f -n \
-	&& fwconsole restart \
-	&& rm -r /usr/src/freepbx
 
 WORKDIR /
+COPY install-freepbx.sh /etc/my_init.d/start-install-freepbx.sh
+RUN chmod +x /etc/my_init.d/start-install-freepbx.sh
+
+RUN mkdir /etc/service/installpbx
+COPY install-freepbx.sh /etc/service/installpbx/run
+RUN chmod +x /etc/service/installpbx/run
