@@ -32,4 +32,3 @@ Please feel free to fork or contribite to this image.
 ### Credit
 
 This work is based on the docker image jmar71n/freepbx.
-Thanks for this great work!
