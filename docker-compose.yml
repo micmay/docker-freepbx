@@ -1,0 +1,17 @@
+# docker-compose up -d
+# docker-compose down
+
+version: '0.0.9'
+services:
+  web:
+    build: .
+    image: mima84/docker-freepbx
+    container_name: freepbx
+    ports:
+    - "5060-5061:5060-5061/udp"
+    - "8082:80/tcp"
+    - "10000-10050:10000-10050/udp"
+    volumes:
+    - logvolume:/var/log
+volumes:
+  logvolume: {}
