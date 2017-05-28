@@ -17,6 +17,6 @@ curl -sf -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepbx/fr
 && fwconsole ma refreshsignatures \
 && fwconsole restart \
 && rm -r /usr/src/freepbx \
-&& echo "Redirect /index.html /html/" > /var/www/.htaccess
+&& echo "Redirect /index.html /html/" > /var/www/.htaccess \
 && echo "Successfull ..." > /var/www/index.html
 popd
