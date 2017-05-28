@@ -27,3 +27,9 @@ http://localhost/html
 
 Please feel free to fork or contribite to this image.
 [https://github.com/micmay/docker-freepbx.git]
+
+
+### Credit
+
+This work is based on the docker image jmar71n/freepbx.
+Thanks for this great work!
