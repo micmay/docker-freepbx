@@ -14,7 +14,7 @@
 docker run --net=host -d -t mima84/docker-freepbx
 ```
 
-Wait for a few minutes. The installation of freepbx start with the first container startup!
+**Wait for a few minutes. The installation of freepbx starts with the first container startup!**
 
 Test it out by visiting your hosts ip address in a browser.
 ```
