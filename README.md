@@ -22,11 +22,13 @@ mkdir docker-freepbx
 cd docker-freepbx
 wget https://raw.githubusercontent.com/micmay/docker-freepbx/master/docker-compose.yml
 
+# start in background
 docker-compose up -d
+
+# start in foreground
+docker-compose up
 ```
 **Wait for a few minutes. The installation of freepbx starts with the first container startup!**
-
-Got to http://localhost:8082 to follow the installation.
 
 Once successfull go to http://localhost:8082/html for freepbx
 

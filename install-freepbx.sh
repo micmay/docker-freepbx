@@ -9,7 +9,7 @@ curl -sf -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepbx/fr
 && cd /usr/src/freepbx \
 && mkdir /var/www/html \
 && echo "<pre>" > /var/www/index.html \
-&& ./install -f -n >>  /var/www/index.html 2>&1 \
+&& ./install -f -n \
 && fwconsole ma refreshsignatures \
 && rm -r /usr/src/freepbx \
 && fwconsole moduleadmin downloadinstall backup \
