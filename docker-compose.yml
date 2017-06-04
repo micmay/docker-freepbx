@@ -9,7 +9,7 @@ services:
     image: mima84/docker-freepbx
     container_name: freepbx
     ports:
-    - "5160:5160/udp"
+    - "5160-5161:5160-5161/udp"
     - "8082:80/tcp"
     - "10000-10050:10000-10050/udp"
 
