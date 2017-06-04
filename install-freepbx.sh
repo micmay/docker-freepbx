@@ -12,6 +12,7 @@ curl -sf -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepbx/fr
 && ./install -f -n >>  /var/www/index.html 2>&1 \
 && fwconsole ma refreshsignatures \
 && rm -r /usr/src/freepbx \
+&& fwconsole moduleadmin downloadinstall backup \
 && echo "Forbidden ..." > /var/www/index.html
 
 fwconsole restart --immediate 
