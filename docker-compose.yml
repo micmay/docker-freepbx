@@ -5,7 +5,7 @@
 version: '2'
 services:
   freepbx:
-    build: .
+#    build: .
     image: mima84/docker-freepbx
     container_name: freepbx
     ports:
