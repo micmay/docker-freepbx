@@ -59,7 +59,7 @@ http://localhost/html
 ```bash
 git clone https://github.com/micmay/docker-freepbx.git
 cd docker-freepbx
-docker-compose build
+docker-compose -f docker-compose-build.yml build
 ```
 
 ### Dockerhub
