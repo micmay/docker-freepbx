@@ -8,4 +8,8 @@ services:
     build: .
     image: mima84/docker-freepbx
     container_name: freepbx
-    network_mode: "host"
+
+    ports:
+    - "5160-5161:5160-5161/udp"
+    - "8082:80/tcp"
+    - "10000-10050:10000-10050/udp"

@@ -1,0 +1,13 @@
+conf
+docker-compose-build.yml
+docker-compose.yml
+Dockerfile
+install-freepbx.sh
+nohup.out
+README.md
+start-amportal.sh
+start-apache2.sh
+start-asterisk.sh
+start_docker-freepbx.sh
+start-docker-freepbx.sh
+start-mysqld.sh

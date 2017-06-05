@@ -28,9 +28,8 @@ docker-compose up -d
 # start in foreground
 docker-compose up
 ```
-**Wait for a few minutes. The installation of freepbx starts with the first container startup!**
 
-Once successfull go to http://localhost:8082 for freepbx
+Go to http://localhost:8082 for freepbx
 
 #### 2nd time
 ```bash
@@ -49,11 +48,6 @@ docker-compose down
 Or
 ```bash
 docker rm freepbx
-```
-
-Test it out by visiting your hosts ip address in a browser.
-```
-http://localhost/html
 ```
 
 ### Build

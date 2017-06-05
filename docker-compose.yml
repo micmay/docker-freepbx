@@ -8,15 +8,12 @@ services:
 #    build: .
     image: mima84/docker-freepbx
     container_name: freepbx
-    network_mode: "host"
 
-#    ports:
-#    - "5160-5161:5160-5161/udp"
-#    - "8082:80/tcp"
-#    - "10000-10050:10000-10050/udp"
+    ports:
+    - "5160-5161:5160-5161/udp"
+    - "8082:80/tcp"
+    - "10000-10050:10000-10050/udp"
 
     volumes:
     - ~/.freepbx/backup:/var/spool/asterisk/backup
-    - ~/.freepbx/data/mysql:/var/lib/mysql
-    - ~/.freepbx/etc/apache2:/etc/apache2
     - /etc/hostname:/etc/hostname:ro

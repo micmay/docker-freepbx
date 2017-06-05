@@ -3,14 +3,15 @@
 if [[ ! -d /var/lib/mysql/asterisk ]]; then
     echo "=> An empty or uninitialized MySQL volume is detected"
     echo "=> Installing MySQL ..."
-    cp -a /opt/defaults/mysql/* /var/lib/mysql/
+    test -d /opt/defaults/data/mysql && cp -a /opt/defaults/data/mysql/* /var/lib/mysql/
     mysql_install_db > /dev/null 2>&1
     echo "=> Done!"
     newdb=true
 fi
 
 
-exec mysqld_safe
+nohup mysqld_safe 
+sleep 2
 
 if [ "$newdb" = true ] ; then
 	mysqladmin -u root create asterisk

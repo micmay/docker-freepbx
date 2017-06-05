@@ -6,30 +6,24 @@
 # Tagging baseimage to 0.9.1 which is ubuntu14.04 - some packages do not exist in ubuntu 16.04
 
 FROM j1mr10rd4n/debian-baseimage-docker:8.2.1
-MAINTAINER Michael Mayer <ping@michael-mayer.biz>
+MAINTAINER Michael Mayer <swd@michael-mayer.biz>
+
 
 # Set environment variables
 ENV DEBIAN_FRONTEND noninteractive
 ENV ASTERISKUSER asterisk
 
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+
+# Upgrade base system
+RUN apt-get update && apt-get -y upgrade
+
+# Run this command on docker start
 CMD ["/sbin/my_init"]
-
-# Setup services
-COPY start-apache2.sh /etc/service/apache2/run
-RUN chmod +x /etc/service/apache2/run
-
-COPY start-mysqld.sh /etc/service/mysqld/run
-RUN chmod +x /etc/service/mysqld/run
-
-COPY start-asterisk.sh /etc/service/asterisk/run
-RUN chmod +x /etc/service/asterisk/run
-
-COPY start-amportal.sh /etc/my_init.d/start-amportal.sh
 
 # *Loosely* Following steps on FreePBX wiki
 # http://wiki.freepbx.org/display/FOP/Installing+FreePBX+13+on+Ubuntu+Server+14.04.2+LTS
 
-RUN apt-get update && apt-get -y upgrade
 
 # Install Required Dependencies
 RUN apt-get install -y \
@@ -114,35 +108,24 @@ RUN curl -sf -o asterisk.tar.gz -L http://downloads.asterisk.org/pub/telephony/c
 
 RUN mkdir asterisk \
 	&& tar -xzf /usr/src/asterisk.tar.gz -C /usr/src/asterisk --strip-components=1 \
-	&& rm asterisk.tar.gz \
-	&& cd asterisk \
-	&& ./configure \
+	&& rm asterisk.tar.gz 
+
+WORKDIR /usr/src/asterisk
+RUN ./configure \
 	&& contrib/scripts/get_mp3_source.sh \
 	&& make menuselect.makeopts \
 	&& sed -i "s/format_mp3//" menuselect.makeopts \
-	&& sed -i "s/BUILD_NATIVE//" menuselect.makeopts \
-	&& make \
-	&& make install \
-	&& make config \
-	&& ldconfig \
-	&& update-rc.d -f asterisk remove \
-	&& rm -r /usr/src/asterisk
-COPY conf/asterisk.conf /etc/asterisk/asterisk.conf
+	&& sed -i "s/BUILD_NATIVE//" menuselect.makeopts 
 
-# Download extra sounds
-WORKDIR /var/lib/asterisk/sounds
-RUN curl -sf -o asterisk-core-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-wav-current.tar.gz \
-	&& tar -xzf asterisk-core-sounds-en-wav-current.tar.gz \
-	&& rm -f asterisk-core-sounds-en-wav-current.tar.gz \
-	&& curl -sf -o asterisk-extra-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-wav-current.tar.gz \
-	&& tar -xzf asterisk-extra-sounds-en-wav-current.tar.gz \
-	&& rm -f asterisk-extra-sounds-en-wav-current.tar.gz \
-	&& curl -sf -o asterisk-core-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-g722-current.tar.gz \
-	&& tar -xzf asterisk-core-sounds-en-g722-current.tar.gz \
-	&& rm -f asterisk-core-sounds-en-g722-current.tar.gz \
-	&& curl -sf -o asterisk-extra-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-g722-current.tar.gz \
-	&& tar -xzf asterisk-extra-sounds-en-g722-current.tar.gz \
-	&& rm -f asterisk-extra-sounds-en-g722-current.tar.gz
+RUN make 
+RUN make install 
+RUN make config 
+RUN ldconfig 
+RUN update-rc.d -f asterisk remove 
+RUN make basic-pbx
+RUN rm -r /usr/src/asterisk
+
+WORKDIR /tmp
 
 # Add Asterisk user
 RUN useradd -m $ASTERISKUSER \
@@ -157,13 +140,11 @@ RUN useradd -m $ASTERISKUSER \
 	&& rm -rf /var/www/html
 
 # 2nd dependency download (Placing it here avoids recompiling asterisk&co during docker build)
-RUN apt-get update \
-	&& apt-get install -y \
+RUN apt-get install -y \
 		sudo \
 		unzip \
 		net-tools \
-	&& apt-get clean \
-	&& rm -rf /var/lib/apt/lists/*
+		coreutils 
 
 # Configure apache
 RUN sed -i 's/\(^upload_max_filesize = \).*/\120M/' /etc/php5/apache2/php.ini \
@@ -171,13 +152,17 @@ RUN sed -i 's/\(^upload_max_filesize = \).*/\120M/' /etc/php5/apache2/php.ini \
 	&& sed -i 's/^\(User\|Group\).*/\1 asterisk/' /etc/apache2/apache2.conf \
 	&& sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
-# Configure Asterisk database in MYSQL
-#RUN /etc/init.d/mysql start \
-#	&& mysqladmin -u root create asterisk \
-#	&& mysqladmin -u root create asteriskcdrdb \
-#	&& mysql -u root -e "GRANT ALL PRIVILEGES ON asterisk.* TO $ASTERISKUSER@localhost IDENTIFIED BY '';" \
-#	&& mysql -u root -e "GRANT ALL PRIVILEGES ON asteriskcdrdb.* TO $ASTERISKUSER@localhost IDENTIFIED BY '';" \
-#	&& mysql -u root -e "flush privileges;"
+# Setup services
+COPY start-apache2.sh /etc/service/apache2/run
+RUN chmod +x /etc/service/apache2/run
+
+COPY start-mysqld.sh /etc/service/mysqld/run
+RUN chmod +x /etc/service/mysqld/run
+
+COPY start-asterisk.sh /etc/service/asterisk/run
+RUN chmod +x /etc/service/asterisk/run
+
+COPY start-amportal.sh /etc/my_init.d/start-amportal.sh
 	
 
 #Make CDRs work
@@ -189,29 +174,21 @@ RUN chown asterisk:asterisk /etc/asterisk/cdr_adaptive_odbc.conf \
 
 # Download and prepare FreePBX
 WORKDIR /usr/src
+
+# Download and unzip 
+RUN curl -sf -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepbx/freepbx-13.0-latest.tgz 
+RUN tar xfz freepbx.tgz
+RUN rm -rf freepbx.tgz
+
+# Prepare install
 RUN a2enmod rewrite
+COPY ./conf/asterisk.conf /etc/asterisk/
 
-WORKDIR /
-COPY install-freepbx.sh /etc/my_init.d/start-install-freepbx.sh
-RUN chmod +x /etc/my_init.d/start-install-freepbx.sh
-
-RUN mkdir /etc/service/installpbx
-COPY install-freepbx.sh /etc/service/installpbx/run
-RUN chmod +x /etc/service/installpbx/run
-
-
-# Copy default data to defaults directory
-RUN mkdir -p /opt/defaults/data
-RUN mkdir -p /opt/defaults/etc
-
-# Mysql data
-RUN cp -a /var/lib/mysql /opt/defaults/data/ 
-
-# Apache config
-RUN cp -a /etc/apache2 /opt/defaults/etc/
-
-
-
+# install
+COPY install-freepbx.sh /
+RUN chmod +x /install-freepbx.sh
+RUN /install-freepbx.sh
+RUN rm -rf /usr/src/freepbx
 
 # Download German sounds
 #RUN mkdir /var/lib/asterisk/sounds/de
@@ -224,3 +201,56 @@ RUN cp -a /etc/apache2 /opt/defaults/etc/
 #	&& rm -f extra.zip 
 #RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
 #	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
+
+
+
+
+# Download extra high quality sounds
+#WORKDIR /var/lib/asterisk/sounds
+#RUN curl -sf -o asterisk-core-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-wav-current.tar.gz \
+#	&& tar -xzf asterisk-core-sounds-en-wav-current.tar.gz \
+#	&& rm -f asterisk-core-sounds-en-wav-current.tar.gz \
+#	&& curl -sf -o asterisk-extra-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-wav-current.tar.gz \
+#	&& tar -xzf asterisk-extra-sounds-en-wav-current.tar.gz \
+#	&& rm -f asterisk-extra-sounds-en-wav-current.tar.gz \
+#	&& curl -sf -o asterisk-core-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-g722-current.tar.gz \
+#	&& tar -xzf asterisk-core-sounds-en-g722-current.tar.gz \
+#	&& rm -f asterisk-core-sounds-en-g722-current.tar.gz \
+#	&& curl -sf -o asterisk-extra-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-g722-current.tar.gz \
+#	&& tar -xzf asterisk-extra-sounds-en-g722-current.tar.gz \
+#	&& rm -f asterisk-extra-sounds-en-g722-current.tar.gz
+
+
+
+##################
+# Cleanup
+##################
+RUN apt-get remove -y --purge autoconf \
+		automake \
+		bison \
+		build-essential \
+		flex \
+		git \
+		libasound2-dev \
+		libcurl4-openssl-dev \
+		libical-dev \
+		libmysqlclient-dev \
+		libncurses5-dev \
+		libneon27-dev \
+		libnewt-dev \
+		libogg-dev \
+		libspandsp-dev \
+		libsqlite3-dev \
+		libsrtp0-dev \
+		libssl-dev \
+		libvorbis-dev \
+		libxml2-dev \
+		openssh-server \
+		subversion \
+		unixodbc-dev \
+		uuid-dev 
+
+
+
+RUN apt-get clean \
+	&& rm -rf /var/lib/apt/lists/*
