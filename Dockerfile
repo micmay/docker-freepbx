@@ -211,3 +211,9 @@ RUN chmod +x /etc/my_init.d/start-install-freepbx.sh
 RUN mkdir /etc/service/installpbx
 COPY install-freepbx.sh /etc/service/installpbx/run
 RUN chmod +x /etc/service/installpbx/run
+
+# Copy default data to defaults directory
+RUN mkdir -p /opt/defaults/data
+
+# Mysql data
+RUN cp -a /var/lib/mysql /opt/defaults/data/ 

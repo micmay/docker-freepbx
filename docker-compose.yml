@@ -15,4 +15,5 @@ services:
 
     volumes:
     - ~/.freepbx/backup:/var/spool/asterisk/backup
+    - ~/.freepbx/data/mysql:/var/lib/mysql
     - /etc/hostname:/etc/hostname:ro

@@ -11,3 +11,4 @@ services:
     network_mode: "host"
     volumes:
     - ~/.freepbx/backup:/var/spool/asterisk/backup
+    - ~/.freepbx/data/mysql:/var/lib/mysql
