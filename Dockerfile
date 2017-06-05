@@ -165,19 +165,6 @@ RUN apt-get update \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Download German sounds
-RUN mkdir /var/lib/asterisk/sounds/de
-WORKDIR /var/lib/asterisk/sounds/de 
-RUN curl -sf -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
-	&& curl -sf -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
-	&& unzip -u core.zip \
-	&& unzip -u extra.zip 
-RUN rm -f core.zip \
-	&& rm -f extra.zip 
-RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
-	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
-
-
 # Configure apache
 RUN sed -i 's/\(^upload_max_filesize = \).*/\120M/' /etc/php5/apache2/php.ini \
 	&& cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf_orig \
@@ -200,7 +187,7 @@ COPY conf/cdr/cdr_adaptive_odbc.conf /etc/asterisk/cdr_adaptive_odbc.conf
 RUN chown asterisk:asterisk /etc/asterisk/cdr_adaptive_odbc.conf \
 	&& chmod 775 /etc/asterisk/cdr_adaptive_odbc.conf
 
-# Download and install FreePBX
+# Download and prepare FreePBX
 WORKDIR /usr/src
 RUN a2enmod rewrite
 
@@ -212,8 +199,28 @@ RUN mkdir /etc/service/installpbx
 COPY install-freepbx.sh /etc/service/installpbx/run
 RUN chmod +x /etc/service/installpbx/run
 
+
 # Copy default data to defaults directory
 RUN mkdir -p /opt/defaults/data
+RUN mkdir -p /opt/defaults/etc
 
 # Mysql data
 RUN cp -a /var/lib/mysql /opt/defaults/data/ 
+
+# Apache config
+RUN cp -a /etc/apache2 /opt/defaults/etc/
+
+
+
+
+# Download German sounds
+#RUN mkdir /var/lib/asterisk/sounds/de
+#WORKDIR /var/lib/asterisk/sounds/de 
+#RUN curl -sf -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
+#	&& curl -sf -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
+#	&& unzip -u core.zip \
+#	&& unzip -u extra.zip 
+#RUN rm -f core.zip \
+#	&& rm -f extra.zip 
+#RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
+#	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;

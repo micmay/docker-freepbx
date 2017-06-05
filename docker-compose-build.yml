@@ -9,6 +9,3 @@ services:
     image: mima84/docker-freepbx
     container_name: freepbx
     network_mode: "host"
-    volumes:
-    - ~/.freepbx/backup:/var/spool/asterisk/backup
-    - ~/.freepbx/data/mysql:/var/lib/mysql
