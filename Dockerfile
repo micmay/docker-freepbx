@@ -104,26 +104,22 @@ RUN curl -sf -o jansson.tar.gz -L http://www.digip.org/jansson/releases/jansson-
 
 # Compile and Install Asterisk
 WORKDIR /usr/src
-RUN curl -sf -o asterisk.tar.gz -L http://downloads.asterisk.org/pub/telephony/certified-asterisk/asterisk-certified-13.13-current.tar.gz
-
+RUN curl -sf -o asterisk.tar.gz -L http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-13-current.tar.gz
 RUN mkdir asterisk \
 	&& tar -xzf /usr/src/asterisk.tar.gz -C /usr/src/asterisk --strip-components=1 \
-	&& rm asterisk.tar.gz 
-
-WORKDIR /usr/src/asterisk
-RUN ./configure \
+	&& rm asterisk.tar.gz \
+	&& cd asterisk \
+	&& ./configure \
 	&& contrib/scripts/get_mp3_source.sh \
 	&& make menuselect.makeopts \
 	&& sed -i "s/format_mp3//" menuselect.makeopts \
-	&& sed -i "s/BUILD_NATIVE//" menuselect.makeopts 
-
-RUN make 
-RUN make install 
-RUN make config 
-RUN ldconfig 
-RUN update-rc.d -f asterisk remove 
-RUN make basic-pbx
-RUN rm -r /usr/src/asterisk
+	&& sed -i "s/BUILD_NATIVE//" menuselect.makeopts \
+	&& make \
+	&& make install \
+	&& make config \
+	&& ldconfig \
+	&& update-rc.d -f asterisk remove \
+	&& rm -r /usr/src/asterisk
 
 WORKDIR /tmp
 
