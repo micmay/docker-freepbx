@@ -5,7 +5,7 @@
 # My changes:
 # Tagging baseimage to 0.9.1 which is ubuntu14.04 - some packages do not exist in ubuntu 16.04
 
-FROM phusion/baseimage:0.9.1
+FROM j1mr10rd4n/debian-baseimage-docker:8.2.1
 MAINTAINER Michael Mayer <ping@michael-mayer.biz>
 
 # Set environment variables
@@ -29,9 +29,10 @@ COPY start-amportal.sh /etc/my_init.d/start-amportal.sh
 # *Loosely* Following steps on FreePBX wiki
 # http://wiki.freepbx.org/display/FOP/Installing+FreePBX+13+on+Ubuntu+Server+14.04.2+LTS
 
+RUN apt-get update && apt-get -y upgrade
+
 # Install Required Dependencies
-RUN apt-get update \
-	&& apt-get install -y \
+RUN apt-get install -y \
 		apache2 \
 		autoconf \
 		automake \
@@ -109,8 +110,9 @@ RUN curl -sf -o jansson.tar.gz -L http://www.digip.org/jansson/releases/jansson-
 
 # Compile and Install Asterisk
 WORKDIR /usr/src
-RUN curl -sf -o asterisk.tar.gz -L http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-13-current.tar.gz \
-	&& mkdir asterisk \
+RUN curl -sf -o asterisk.tar.gz -L http://downloads.asterisk.org/pub/telephony/certified-asterisk/asterisk-certified-13.13-current.tar.gz
+
+RUN mkdir asterisk \
 	&& tar -xzf /usr/src/asterisk.tar.gz -C /usr/src/asterisk --strip-components=1 \
 	&& rm asterisk.tar.gz \
 	&& cd asterisk \
@@ -159,6 +161,7 @@ RUN apt-get update \
 	&& apt-get install -y \
 		sudo \
 		unzip \
+		net-tools \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 
@@ -179,7 +182,7 @@ RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
 RUN sed -i 's/\(^upload_max_filesize = \).*/\120M/' /etc/php5/apache2/php.ini \
 	&& cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf_orig \
 	&& sed -i 's/^\(User\|Group\).*/\1 asterisk/' /etc/apache2/apache2.conf \
-	&& sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/sites-available/default
+	&& sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
 # Configure Asterisk database in MYSQL
 #RUN /etc/init.d/mysql start \
