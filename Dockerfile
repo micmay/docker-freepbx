@@ -104,7 +104,7 @@ RUN curl -sf -o jansson.tar.gz -L http://www.digip.org/jansson/releases/jansson-
 
 # Compile and Install Asterisk
 WORKDIR /usr/src
-RUN curl -sf -o asterisk.tar.gz -L http://downloads.asterisk.org/pub/telephony/certified-asterisk/asterisk-certified-13.13-current.tar.gz
+RUN curl -f -o asterisk.tar.gz -L http://downloads.asterisk.org/pub/telephony/certified-asterisk/asterisk-certified-13.13-current.tar.gz
 RUN mkdir asterisk \
 	&& tar -xzf /usr/src/asterisk.tar.gz -C /usr/src/asterisk --strip-components=1 \
 	&& rm asterisk.tar.gz 
@@ -114,9 +114,9 @@ RUN ./configure
 RUN contrib/scripts/get_mp3_source.sh 
 RUN make menuselect.makeopts 
 
-RUN	cat menuselect.makeopts \
-	&& sed -i "s/format_mp3//" menuselect.makeopts \
-	&& sed -i "s/BUILD_NATIVE//" menuselect.makeopts 
+# RUN ./menuselect/menuselect --list-options  
+RUN ./menuselect/menuselect --enable=chan_sip --enable=format_mp3 --disable=BUILD_NATIVE
+RUN	cat menuselect.makeopts 
 RUN make 
 RUN make install \
 	&& make config \
@@ -176,7 +176,7 @@ RUN chown asterisk:asterisk /etc/asterisk/cdr_adaptive_odbc.conf \
 WORKDIR /usr/src
 
 # Download and unzip 
-RUN curl -sf -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepbx/freepbx-13.0-latest.tgz 
+RUN curl -f -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepbx/freepbx-13.0-latest.tgz 
 RUN tar xfz freepbx.tgz
 RUN rm -rf freepbx.tgz
 
@@ -212,35 +212,37 @@ RUN cp -a /var/spool/asterisk /opt/default/data/
 
 
 
-# Download German sounds
-#RUN mkdir /var/lib/asterisk/sounds/de
-#WORKDIR /var/lib/asterisk/sounds/de 
-#RUN curl -sf -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
-#	&& curl -sf -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
-#	&& unzip -u core.zip \
-#	&& unzip -u extra.zip 
-#RUN rm -f core.zip \
-#	&& rm -f extra.zip 
-#RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
-#	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
-
-
-
-
 # Download extra high quality sounds
-#WORKDIR /var/lib/asterisk/sounds
-#RUN curl -sf -o asterisk-core-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-wav-current.tar.gz \
-#	&& tar -xzf asterisk-core-sounds-en-wav-current.tar.gz \
-#	&& rm -f asterisk-core-sounds-en-wav-current.tar.gz \
-#	&& curl -sf -o asterisk-extra-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-wav-current.tar.gz \
-#	&& tar -xzf asterisk-extra-sounds-en-wav-current.tar.gz \
-#	&& rm -f asterisk-extra-sounds-en-wav-current.tar.gz \
-#	&& curl -sf -o asterisk-core-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-g722-current.tar.gz \
-#	&& tar -xzf asterisk-core-sounds-en-g722-current.tar.gz \
-#	&& rm -f asterisk-core-sounds-en-g722-current.tar.gz \
-#	&& curl -sf -o asterisk-extra-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-g722-current.tar.gz \
-#	&& tar -xzf asterisk-extra-sounds-en-g722-current.tar.gz \
-#	&& rm -f asterisk-extra-sounds-en-g722-current.tar.gz
+WORKDIR /var/lib/asterisk/sounds
+RUN curl -f -o asterisk-core-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-wav-current.tar.gz \
+	&& tar -xzf asterisk-core-sounds-en-wav-current.tar.gz \
+	&& rm -f asterisk-core-sounds-en-wav-current.tar.gz \
+	&& curl -f -o asterisk-extra-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-wav-current.tar.gz \
+	&& tar -xzf asterisk-extra-sounds-en-wav-current.tar.gz \
+	&& rm -f asterisk-extra-sounds-en-wav-current.tar.gz \
+	&& curl -f -o asterisk-core-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-g722-current.tar.gz \
+	&& tar -xzf asterisk-core-sounds-en-g722-current.tar.gz \
+	&& rm -f asterisk-core-sounds-en-g722-current.tar.gz \
+	&& curl -f -o asterisk-extra-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-g722-current.tar.gz \
+	&& tar -xzf asterisk-extra-sounds-en-g722-current.tar.gz \
+	&& rm -f asterisk-extra-sounds-en-g722-current.tar.gz
+	
+# Download German sounds
+RUN mkdir /var/lib/asterisk/sounds/de
+WORKDIR /var/lib/asterisk/sounds/de 
+RUN curl -f -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
+	&& curl -f -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
+	&& unzip -u core.zip \
+	&& unzip -u extra.zip 
+RUN rm -f core.zip \
+	&& rm -f extra.zip 
+RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
+	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
+
+
+
+
+
 
 
 
