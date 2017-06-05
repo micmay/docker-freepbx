@@ -123,7 +123,6 @@ RUN make install \
 	&& ldconfig \
 	&& update-rc.d -f asterisk remove 
 
-RUN make basic-pbx
 RUN rm -r /usr/src/asterisk
 
 WORKDIR /tmp
@@ -190,6 +189,28 @@ COPY install-freepbx.sh /
 RUN chmod +x /install-freepbx.sh
 RUN /install-freepbx.sh
 RUN rm -rf /usr/src/freepbx
+
+
+
+# Out of container data storage
+RUN mkdir -p /opt/default/etc/ && mkdir -p /opt/default/data/
+
+# Asterisk config
+RUN cp -a /etc/asterisk /opt/default/etc/
+
+# Apache2 config
+RUN cp -a /etc/apache2 /opt/default/etc/
+
+# Freepbx
+RUN cp -a /var/www/html /opt/default/data/
+
+# Mysql
+RUN cp -a /var/lib/mysql /opt/default/data/
+
+# Asterisk spooling
+RUN cp -a /var/spool/asterisk /opt/default/data/
+
+
 
 # Download German sounds
 #RUN mkdir /var/lib/asterisk/sounds/de
