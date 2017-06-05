@@ -7,8 +7,8 @@ curl -sf -o freepbx.tgz -L http://mirror.freepbx.org/modules/packages/freepbx/fr
 && tar xfz freepbx.tgz \
 && rm freepbx.tgz \
 && cd /usr/src/freepbx \
-&& mkdir /var/www/html \
 && echo "<pre>" > /var/www/index.html \
+&& sleep 5 \
 && ./install -f -n \
 && fwconsole ma refreshsignatures \
 && rm -r /usr/src/freepbx \
