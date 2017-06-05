@@ -2,7 +2,7 @@
 
 ### Image includes
 
- * phusion/baseimage (Ubuntu 14.04)
+ * Debian Jessie
  * LAMP stack (apache2, mysql, php)
  * Asterisk 13
  * FreePBX 13
