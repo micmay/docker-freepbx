@@ -27,10 +27,8 @@ RUN useradd -m $ASTERISKUSER \
 	&& chown -R $ASTERISKUSER. /var/log/asterisk \
 	&& chown -R $ASTERISKUSER. /var/spool/asterisk \
 	&& chown -R $ASTERISKUSER. /usr/lib/asterisk \
-	&& chown -R $ASTERISKUSER. /var/www/ \
-	&& chown -R $ASTERISKUSER. /var/www/* \
-	&& rm -rf /var/www/html
-
+	&& chown -R $ASTERISKUSER. /var/www/ 
+	
 
 # Download extra high quality sounds
 WORKDIR /var/lib/asterisk/sounds
@@ -121,6 +119,10 @@ RUN apt-get install -y \
 # Replace default conf files to reduce memory usage
 COPY conf/my-small.cnf /etc/mysql/my.cnf
 COPY conf/mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
+
+RUN chown -R $ASTERISKUSER. /var/www/* \
+	&& rm -rf /var/www/html
+
 
 # Install Legacy pear requirements
 RUN pear install Console_Getopt
