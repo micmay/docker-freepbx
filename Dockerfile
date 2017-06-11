@@ -45,6 +45,8 @@ RUN curl -f -o asterisk-core-sounds-en-wav-current.tar.gz -L http://downloads.as
 	&& tar -xzf asterisk-extra-sounds-en-g722-current.tar.gz \
 	&& rm -f asterisk-extra-sounds-en-g722-current.tar.gz
 	
+RUN apt-get update && apt-get install -y unzip 
+
 # Download German sounds
 RUN mkdir /var/lib/asterisk/sounds/de
 WORKDIR /var/lib/asterisk/sounds/de 
@@ -181,7 +183,6 @@ WORKDIR /tmp
 # 2nd dependency download (Placing it here avoids recompiling asterisk&co during docker build)
 RUN apt-get install -y \
 		sudo \
-		unzip \
 		net-tools \
 		coreutils 
 
