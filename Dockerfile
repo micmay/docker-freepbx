@@ -1,9 +1,7 @@
-# This dockerfile and configuration is originaly created by
+# This dockerfile and configuration is derived by
 # Jason Martin <jason@greenpx.co.uk>
-# Many Thanks to the original author in this place!
+# Many Thanks to the  author in this place!
 
-# My changes:
-# Tagging baseimage to 0.9.1 which is ubuntu14.04 - some packages do not exist in ubuntu 16.04
 
 FROM j1mr10rd4n/debian-baseimage-docker:8.2.1
 MAINTAINER Michael Mayer <swd@michael-mayer.biz>
