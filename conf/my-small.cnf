@@ -49,8 +49,8 @@ thread_stack = 128K
 # Note that using this option without enabling named pipes on Windows
 # (using the "enable-named-pipe" option) will render mysqld useless!
 #
-#skip-networking
-server-id       = 1
+skip-networking
+#server-id       = 1
 
 # Uncomment the following if you want to log updates
 #log-bin=mysql-bin

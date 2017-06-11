@@ -8,8 +8,18 @@ services:
     build: .
     image: mima84/docker-freepbx
     container_name: freepbx
+    volumes:
+      - freepbx-apache:/etc/apache2
+      - freepbx-asterisk-config:/etc/asterisk
+      - freepbx-mysql:/var/lib/mysql
+      - freepbx-asterisk-spool:/var/spool/asterisk
+      - freepbx-asterisk-data:/var/lib/asterisk
 
-    ports:
-    - "5160-5161:5160-5161/udp"
-    - "8082:80/tcp"
-    - "10000-10050:10000-10050/udp"
+volumes:
+  freepbx-apache:
+  freepbx-asterisk-config:
+  freepbx-mysql:
+  freepbx-asterisk-spool:
+  freepbx-asterisk-data:
+
+      #VOLUME ["/etc/asterisk","/etc/apache2","/var/www/html","/var/lib/mysql","/var/spool/asterisk","/var/lib/asterisk"]

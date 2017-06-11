@@ -11,6 +11,56 @@ MAINTAINER Michael Mayer <swd@michael-mayer.biz>
 ENV DEBIAN_FRONTEND noninteractive
 ENV ASTERISKUSER asterisk
 
+RUN mkdir -p /var/run/asterisk \ 
+	&& mkdir -p /etc/asterisk \
+	&& mkdir -p /var/lib/asterisk \
+	&& mkdir -p /var/log/asterisk \
+	&& mkdir -p /var/spool/asterisk \
+	&& mkdir -p /usr/lib/asterisk \
+	&& mkdir -p /var/www/
+
+# Add Asterisk user
+RUN useradd -m $ASTERISKUSER \
+	&& chown $ASTERISKUSER. /var/run/asterisk \ 
+	&& chown -R $ASTERISKUSER. /etc/asterisk \
+	&& chown -R $ASTERISKUSER. /var/lib/asterisk \
+	&& chown -R $ASTERISKUSER. /var/log/asterisk \
+	&& chown -R $ASTERISKUSER. /var/spool/asterisk \
+	&& chown -R $ASTERISKUSER. /usr/lib/asterisk \
+	&& chown -R $ASTERISKUSER. /var/www/ \
+	&& chown -R $ASTERISKUSER. /var/www/* \
+	&& rm -rf /var/www/html
+
+
+# Download extra high quality sounds
+WORKDIR /var/lib/asterisk/sounds
+RUN curl -f -o asterisk-core-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-wav-current.tar.gz \
+	&& tar -xzf asterisk-core-sounds-en-wav-current.tar.gz \
+	&& rm -f asterisk-core-sounds-en-wav-current.tar.gz \
+	&& curl -f -o asterisk-extra-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-wav-current.tar.gz \
+	&& tar -xzf asterisk-extra-sounds-en-wav-current.tar.gz \
+	&& rm -f asterisk-extra-sounds-en-wav-current.tar.gz \
+	&& curl -f -o asterisk-core-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-g722-current.tar.gz \
+	&& tar -xzf asterisk-core-sounds-en-g722-current.tar.gz \
+	&& rm -f asterisk-core-sounds-en-g722-current.tar.gz \
+	&& curl -f -o asterisk-extra-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-g722-current.tar.gz \
+	&& tar -xzf asterisk-extra-sounds-en-g722-current.tar.gz \
+	&& rm -f asterisk-extra-sounds-en-g722-current.tar.gz
+	
+# Download German sounds
+RUN mkdir /var/lib/asterisk/sounds/de
+WORKDIR /var/lib/asterisk/sounds/de 
+RUN curl -f -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
+	&& curl -f -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
+	&& unzip -u core.zip \
+	&& unzip -u extra.zip 
+RUN rm -f core.zip \
+	&& rm -f extra.zip 
+RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
+	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
+
+
+
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 
 # Upgrade base system
@@ -125,17 +175,6 @@ RUN rm -r /usr/src/asterisk
 
 WORKDIR /tmp
 
-# Add Asterisk user
-RUN useradd -m $ASTERISKUSER \
-	&& chown $ASTERISKUSER. /var/run/asterisk \ 
-	&& chown -R $ASTERISKUSER. /etc/asterisk \
-	&& chown -R $ASTERISKUSER. /var/lib/asterisk \
-	&& chown -R $ASTERISKUSER. /var/log/asterisk \
-	&& chown -R $ASTERISKUSER. /var/spool/asterisk \
-	&& chown -R $ASTERISKUSER. /usr/lib/asterisk \
-	&& chown -R $ASTERISKUSER. /var/www/ \
-	&& chown -R $ASTERISKUSER. /var/www/* \
-	&& rm -rf /var/www/html
 
 # 2nd dependency download (Placing it here avoids recompiling asterisk&co during docker build)
 RUN apt-get install -y \
@@ -146,9 +185,11 @@ RUN apt-get install -y \
 
 # Configure apache
 RUN sed -i 's/\(^upload_max_filesize = \).*/\120M/' /etc/php5/apache2/php.ini \
-	&& cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf_orig \
 	&& sed -i 's/^\(User\|Group\).*/\1 asterisk/' /etc/apache2/apache2.conf \
-	&& sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+	&& sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf \
+	&& sed -i 's/VirtualHost \*:80/VirtualHost \*:8082/' /etc/apache2/sites-available/000-default.conf \
+	&& sed -i 's/Listen 80/Listen 8082/' /etc/apache2/ports.conf
+
 
 # Setup services
 COPY start-apache2.sh /etc/service/apache2/run
@@ -190,54 +231,6 @@ RUN rm -rf /usr/src/freepbx
 
 
 
-# Out of container data storage
-RUN mkdir -p /opt/default/etc/ && mkdir -p /opt/default/data/
-
-# Asterisk config
-RUN cp -a /etc/asterisk /opt/default/etc/
-
-# Apache2 config
-RUN cp -a /etc/apache2 /opt/default/etc/
-
-# Freepbx
-RUN cp -a /var/www/html /opt/default/data/
-
-# Mysql
-RUN cp -a /var/lib/mysql /opt/default/data/
-
-# Asterisk spooling
-RUN cp -a /var/spool/asterisk /opt/default/data/
-
-
-
-# Download extra high quality sounds
-WORKDIR /var/lib/asterisk/sounds
-RUN curl -f -o asterisk-core-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-wav-current.tar.gz \
-	&& tar -xzf asterisk-core-sounds-en-wav-current.tar.gz \
-	&& rm -f asterisk-core-sounds-en-wav-current.tar.gz \
-	&& curl -f -o asterisk-extra-sounds-en-wav-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-wav-current.tar.gz \
-	&& tar -xzf asterisk-extra-sounds-en-wav-current.tar.gz \
-	&& rm -f asterisk-extra-sounds-en-wav-current.tar.gz \
-	&& curl -f -o asterisk-core-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-g722-current.tar.gz \
-	&& tar -xzf asterisk-core-sounds-en-g722-current.tar.gz \
-	&& rm -f asterisk-core-sounds-en-g722-current.tar.gz \
-	&& curl -f -o asterisk-extra-sounds-en-g722-current.tar.gz -L http://downloads.asterisk.org/pub/telephony/sounds/asterisk-extra-sounds-en-g722-current.tar.gz \
-	&& tar -xzf asterisk-extra-sounds-en-g722-current.tar.gz \
-	&& rm -f asterisk-extra-sounds-en-g722-current.tar.gz
-	
-# Download German sounds
-RUN mkdir /var/lib/asterisk/sounds/de
-WORKDIR /var/lib/asterisk/sounds/de 
-RUN curl -f -o core.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-core-de-sln16.zip \
-	&& curl -f -o extra.zip -L https://www.asterisksounds.org/de/download/asterisk-sounds-extra-de-sln16.zip \
-	&& unzip -u core.zip \
-	&& unzip -u extra.zip 
-RUN rm -f core.zip \
-	&& rm -f extra.zip 
-RUN chown -R $ASTERISKUSER.$ASTERISKUSER /var/lib/asterisk/sounds/de  \
-	&& find /var/lib/asterisk/sounds/de -type d -exec chmod 0775 {} \;
-
-
 
 
 
@@ -276,3 +269,5 @@ RUN apt-get remove -y --purge autoconf \
 
 RUN apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
+
+VOLUME ["/etc/asterisk","/etc/apache2","/var/www/html","/var/lib/mysql","/var/spool/asterisk","/var/lib/asterisk"]

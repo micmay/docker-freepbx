@@ -23,7 +23,6 @@ mysql -u root -e "flush privileges;"
 && fwconsole restart --immediate  
 
 
-killall my_init
 
 
 popd
